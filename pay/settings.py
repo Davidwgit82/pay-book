@@ -128,3 +128,4 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 GENIUS_PAY_API_KEY = env('GENIUS_PAY_API_KEY', default='')
 GENIUS_PAY_API_URL = env('GENIUS_PAY_API_URL', default='')
+GENIUS_PAY_API_SECRET = env('GENIUS_PAY_API_SECRET', default='')
