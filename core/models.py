@@ -121,6 +121,10 @@ class Payment(models.Model):
         choices=Status.choices, 
         default=Status.PENDING
     )
+
+    guest_name = models.CharField(max_length=255, blank=True)
+    guest_email = models.EmailField(blank=True)
+    guest_phone = models.CharField(max_length=30, blank=True)
     
     # Traçabilité temporelle
     created_at = models.DateTimeField(auto_now_add=True)
