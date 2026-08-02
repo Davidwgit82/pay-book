@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: mon-django-app
+    env: python
+    buildCommand: ./build.sh
+    startCommand: gunicorn mon_projet.wsgi:application
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: SECRET_KEY
+        generateValue: true
+      - key: WEB_CONCURRENCY
+        value: 4
