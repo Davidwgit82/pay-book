@@ -104,6 +104,7 @@ class Payment(models.Model):
     book_instance = models.ForeignKey(
         'BookInstance',
         on_delete=models.SET_NULL,
+        null=True,
         related_name="payments"
     )
     
