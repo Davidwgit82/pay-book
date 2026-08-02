@@ -121,5 +121,7 @@ STATIC_URL = 'static/'
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
 GENIUS_PAY_API_KEY = env('GENIUS_PAY_API_KEY', default='')
 GENIUS_PAY_API_URL = env('GENIUS_PAY_API_URL', default='')
