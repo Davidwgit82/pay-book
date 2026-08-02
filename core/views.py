@@ -1,5 +1,6 @@
 from django.views.generic import ListView, DetailView, TemplateView
-
+import hashlib
+import hmac
 import requests
 from django.conf import settings
 # from django.contrib.auth.decorators import login_required
@@ -123,18 +124,41 @@ def initiate_payment(request, instance_id):
 @csrf_exempt
 @require_POST
 def genius_pay_webhook(request):
-    # 1. Vérification de l'en-tête d'environnement pour s'assurer de la cohérence
-    env_header = request.headers.get("X-Webhook-Environment")
+    # 1. Récupération des en-têtes spécifiques à Genius Pay
+    signature = request.headers.get("X-Webhook-Signature") or request.headers.get("HTTP_X_WEBHOOK_SIGNATURE")
+    timestamp = request.headers.get("X-Webhook-Timestamp") or request.headers.get("HTTP_X_WEBHOOK_TIMESTAMP")
     
+    if not signature or not timestamp:
+        return JsonResponse({"error": "Missing signature or timestamp headers"}, status=401)
+    
+    # 2. Récupération du corps brut (payload)
+    payload_body = request.body # C'est déjà des bytes en Django
+    
+    # 3. Reconstruction de la chaîne signée : timestamp + "." + payload
+    secret = getattr(settings, "GENIUS_PAY_WEBHOOK_SECRET", "").encode("utf-8")
+    
+    # On assemble le timestamp (en bytes) + le point + le corps de la requête
+    signed_payload = timestamp.encode("utf-8") + b"." + payload_body
+    
+    computed_signature = hmac.new(
+        secret,
+        msg=signed_payload,
+        digestmod=hashlib.sha256
+    ).hexdigest()
+    
+    # 4. Comparaison sécurisée anti-timing attack
+    if not hmac.compare_digest(computed_signature, signature):
+        return JsonResponse({"error": "Invalid signature"}, status=403)
+
+    # 5. Le reste de ton traitement JSON et métier...
     try:
-        payload = json.loads(request.body)
+        payload = json.loads(payload_body)
     except json.JSONDecodeError:
         return JsonResponse({"error": "Invalid JSON"}, status=400)
 
-    event_type = payload.get("event") or payload.get("type") # Selon la structure exacte de l'événement
+    event_type = payload.get("event") or payload.get("type")
     data = payload.get("data", {})
     
-    # On récupère le payment_id passé dans les metadata lors de l'initiation
     metadata = data.get("metadata", {})
     payment_id = metadata.get("payment_id")
 
