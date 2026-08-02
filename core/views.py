@@ -15,8 +15,8 @@ from django.urls import reverse
 
 from django.contrib import messages
 
-def health_check(request):
-    return HttpResponse("ok", status=200)
+def ping(request):
+    return HttpResponse("pong")
 
 """ base views """
 class IndexView(TemplateView):
