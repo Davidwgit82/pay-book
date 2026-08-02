@@ -10,6 +10,7 @@ import json
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from .models import BookInstance, Payment, Book
+from django.urls import reverse
 
 from django.contrib import messages
 
@@ -22,7 +23,7 @@ class IndexView(TemplateView):
 
 class BookViewPage(ListView):
     model = Book
-    template_name = "books.html"
+    template_name = "book_list.html"
     context_object_name = "books"
 
     def get_queryset(self):
@@ -49,23 +50,19 @@ class BookDetailViewPage(DetailView):
 # @login_required
 @require_POST
 def initiate_payment(request, instance_id):
-    if request.method != "POST":
-        return redirect('book-detail', pk=instance_id)
-
     book_instance = get_object_or_404(BookInstance, id=instance_id)
 
     # 1. Vérification de la disponibilité
-    if book_instance.status != BookInstance.Status.DISPONIBLE: # Adapte selon ton choix de status (ex: 'disponible')
+    if book_instance.status != BookInstance.Status.DISPONIBLE:
         messages.error(request, "Cet exemplaire n'est plus disponible.")
         return redirect('book-detail', pk=book_instance.book.id)
 
-    # Utilisation d'une transaction atomique pour sécuriser la création
+    # 2. Création du paiement en local (statut pending) dans une transaction atomique
     with transaction.atomic():
-        # 2. Création du paiement en local (statut pending)
         payment = Payment.objects.create(
             user=request.user,
             book_instance=book_instance,
-            amount=book_instance.book.prix,  # Assure-toi que book_instance pointe bien vers Book
+            amount=book_instance.book.prix,  # Assure-toi que le prix est accessible ici
             currency='XOF',
             status=Payment.Status.PENDING
         )
@@ -73,14 +70,15 @@ def initiate_payment(request, instance_id):
     # 3. Préparation des données pour l'API Genius Pay
     payload = {
         "amount": int(payment.amount),
+        "currency": "XOF",
         "description": f"Achat du livre : {book_instance.book.title}",
         "customer": {
-            "name": request.user.email,  # Ou nom/prénom si tu en as
+            "name": request.user.email,
             "email": request.user.email,
             "phone": getattr(request.user, 'phone', ''),
         },
-        "success_url": request.build_absolute_uri('/payment/success/'),
-        "error_url": request.build_absolute_uri('/payment/error/'),
+        "success_url": request.build_absolute_uri(reverse('payment_success')),
+        "error_url": request.build_absolute_uri(reverse('payment_error')),
         "metadata": {
             "payment_id": str(payment.id),
             "book_instance_id": str(book_instance.id)
@@ -88,32 +86,38 @@ def initiate_payment(request, instance_id):
     }
 
     headers = {
-        "Authorization": f"Bearer {settings.GENIUS_PAY_API_KEY}",
+        "Authorization": f"Bearer {settings.GENIUS_PAY_API_SECRET}",
         "Content-Type": "application/json"
     }
 
     try:
         response = requests.post(settings.GENIUS_PAY_API_URL, json=payload, headers=headers, timeout=10)
+        print("CODE STATUS:", response.status_code)
+        print("REPONSE BRUTE:", response.text)
         data = response.json()
 
-        if response.status_code == 201 and data.get("success"):
+        if response.status_code in [200, 201] and data.get("success"):
             payment_data = data.get("data", {})
             
-            # Sauvegarde de la référence/transaction_id renvoyée par l'API
+            # Sauvegarde de la référence et de l'ID de transaction renvoyés par l'API
             payment.transaction_id = str(payment_data.get("id"))
             payment.reference = payment_data.get("reference")
             payment.save()
 
             # Redirection vers la page de checkout Genius Pay
-            payment_url = payment_data.get("payment_url")
+            payment_url = payment_data.get("checkout_url")
             if payment_url:
                 return redirect(payment_url)
-                
-    except requests.RequestException as e:
-        # Gérer l'erreur réseau (logger l'erreur)
-        pass
+        else:
+            # Si l'API refuse la requête, on récupère le message d'erreur si possible
+            error_message = data.get("message", "Erreur lors de l'initialisation du paiement.")
+            messages.error(request, error_message)
 
-    return redirect('book-list')
+    except requests.RequestException:
+        messages.error(request, "Erreur de communication avec le service de paiement.")
+
+    # En cas d'échec, on redirige vers le détail du livre
+    return redirect('book-detail', pk=book_instance.book.id)
 
 
 @csrf_exempt
