@@ -7,11 +7,14 @@ from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect
 from django.views.decorators.http import require_POST
 import json
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from .models import BookInstance, Payment, Book
 
 from django.contrib import messages
+
+def health_check(request):
+    return HttpResponse("ok", status=200)
 
 """ base views """
 class IndexView(TemplateView):
