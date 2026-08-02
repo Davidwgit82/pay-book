@@ -1,0 +1,42 @@
+{% extends 'master.html' %}
+
+{% block title %}{{ book.title }} - Détails{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-xl shadow-md p-6 md:p-8 max-w-3xl mx-auto">
+    <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ book.title }}</h1>
+    <p class="text-indigo-600 font-semibold mb-4">{{ book.prix }} XOF</p>
+    <p class="text-gray-600 mb-6">{{ book.description }}</p>
+
+    <h2 class="text-xl font-bold mb-4">Exemplaires disponibles :</h2>
+    <div class="space-y-4">
+        {% for instance in book_instance %}
+            <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                <div>
+                    <span class="text-sm font-medium text-gray-500">ID Exemplaire : #{{ instance.id }}</span>
+                    <p class="font-medium">Statut : 
+                        <span class="px-2 py-1 text-xs rounded-full {% if instance.status == 'disponible' %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                            {{ instance.get_status_display }}
+                        </span>
+                    </p>
+                </div>
+
+                {% if instance.status == 'disponible' %}
+                    <form action="{% url 'initiate-payment' instance.id %}" method="POST">
+                        {% csrf_token %}
+                        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2 rounded-lg transition">
+                            Acheter cet exemplaire
+                        </button>
+                    </form>
+                {% else %}
+                    <button disabled class="bg-gray-200 text-gray-400 font-medium px-4 py-2 rounded-lg cursor-not-allowed">
+                        Indisponible
+                    </button>
+                {% endif %}
+            </div>
+        {% empty %}
+            <p class="text-gray-500">Aucun exemplaire disponible pour le moment.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

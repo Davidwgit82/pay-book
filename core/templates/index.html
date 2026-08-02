@@ -1,0 +1,41 @@
+{% extends 'master.html' %}
+{% load static %}
+
+{% block content %}
+<main class="bg-white text-gray-900 overflow-hidden">
+    <!-- Section Hero / Vitrine -->
+    <section class="relative bg-white pt-12 pb-24 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            
+            <!-- Colonne de gauche : Image de la couverture du livre -->
+            <div class="lg:col-span-6 flex justify-center lg:justify-end relative">
+                <!-- Ombre portée et effet de profondeur -->
+                <div class="absolute -inset-4 bg-gray-100 rounded-lg transform -rotate-1 -z-10"></div>
+                <img src="{% static 'images/book.jpg' %}" alt="Calling Emma - Émilie Giraud" class="w-full max-w-md shadow-2xl rounded-sm object-cover">
+            </div>
+
+            <!-- Colonne de droite : Titre, description et CTA -->
+            <div class="lg:col-span-6 z-10">
+                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-serif font-extrabold tracking-tight text-gray-900 leading-tight mb-6">
+                    Un livre à succès par <span class="block text-gray-900">Émilie Giraud</span>
+                </h1>
+                
+                <!-- Fond sombre intégré sous la partie texte/CTA comme sur la maquette -->
+                <div class="bg-neutral-900 text-white p-8 sm:p-10 rounded-sm shadow-xl mt-8">
+                    <p class="text-sm uppercase tracking-widest text-gray-400 font-semibold mb-4">
+                        Version eBook disponible
+                    </p>
+                    
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                        <!-- Bouton Acheter vers le catalogue ou le détail -->
+                        <a href="{% url 'book-list' %}" class="inline-block border-2 border-white text-white font-medium px-8 py-3 text-sm tracking-wider uppercase hover:bg-white hover:text-black transition duration-300">
+                            Acheter
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+</main>
+{% endblock %}
