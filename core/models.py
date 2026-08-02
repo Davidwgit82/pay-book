@@ -73,7 +73,7 @@ class Book(models.Model):
         return reverse('book-detail', kwargs={'pk': self.pk})
 
     class Meta:
-        ordering = ['created_at']
+        ordering = ['-created_at']
 
 
 class BookInstance(models.Model):
