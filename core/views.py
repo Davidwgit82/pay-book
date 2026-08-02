@@ -78,7 +78,6 @@ def checkout_info(request, instance_id):
 
     return render(request, 'checkout_info.html', {'book_instance': book_instance})
 
-
 @require_POST
 def initiate_payment(request, instance_id):
     book_instance = get_object_or_404(BookInstance, id=instance_id)
@@ -118,6 +117,9 @@ def initiate_payment(request, instance_id):
         )
 
     # 4. Préparation des données pour l'API Genius Pay
+    success_url = request.build_absolute_uri(reverse('payment_success'))
+    error_url = request.build_absolute_uri(reverse('payment_error'))
+
     payload = {
         "amount": int(payment.amount),
         "currency": "XOF",
@@ -127,8 +129,8 @@ def initiate_payment(request, instance_id):
             "email": customer_email,
             "phone": customer_phone,
         },
-        "success_url": request.build_absolute_uri(reverse('payment_success')),
-        "error_url": request.build_absolute_uri(reverse('payment_error')),
+        "success_url": success_url,
+        "error_url": error_url,
         "metadata": {
             "payment_id": str(payment.id),
             "book_instance_id": str(book_instance.id)
@@ -141,8 +143,22 @@ def initiate_payment(request, instance_id):
         "Content-Type": "application/json"
     }
 
+    # --- DEBUG TEMPORAIRE : à retirer une fois le bug identifié ---
+    print("=== DEBUG PAYMENT ===")
+    print("amount:", payment.amount, type(payment.amount))
+    print("success_url:", success_url)
+    print("error_url:", error_url)
+    print("payload:", payload)
+    # ----------------------------------------------------------------
+
     try:
         response = requests.post(settings.GENIUS_PAY_API_URL, json=payload, headers=headers, timeout=10)
+
+        # --- DEBUG TEMPORAIRE ---
+        print("STATUS CODE:", response.status_code)
+        print("RESPONSE BODY:", response.text)
+        # ------------------------
+
         data = response.json()
 
         if response.status_code in [200, 201] and data.get("success"):
@@ -160,14 +176,15 @@ def initiate_payment(request, instance_id):
         else:
             # Si l'API refuse la requête, on récupère le message d'erreur si possible
             error_message = data.get("message", "Erreur lors de l'initialisation du paiement.")
+            print("ERREUR GENIUSPAY (data complet):", data)  # --- DEBUG TEMPORAIRE ---
             messages.error(request, error_message)
 
-    except requests.RequestException:
+    except requests.RequestException as e:
+        print("ERREUR REQUETE:", repr(e))  # --- DEBUG TEMPORAIRE ---
         messages.error(request, "Erreur de communication avec le service de paiement.")
 
     # En cas d'échec, on redirige vers le détail du livre
     return redirect('book-detail', pk=book_instance.book.id)
-
 
 @csrf_exempt
 @require_POST
