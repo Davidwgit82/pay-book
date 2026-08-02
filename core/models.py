@@ -83,7 +83,10 @@ class BookInstance(models.Model):
         choices=Status.choices, 
         default=Status.DISPONIBLE
     )
-    due_back = models.DateTimeField(null=True, blank=True) 
+    due_back = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"Book {self.book.title} - {self.get_status_display()}"
 
 
 """ payment """
