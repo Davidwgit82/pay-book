@@ -87,7 +87,8 @@ def initiate_payment(request, instance_id):
     }
 
     headers = {
-        "Authorization": f"Bearer {settings.GENIUS_PAY_API_SECRET}",
+        "X-API-Key": settings.GENIUS_PAY_API_KEY,
+        "X-API-Secret": settings.GENIUS_PAY_API_SECRET,
         "Content-Type": "application/json"
     }
 
