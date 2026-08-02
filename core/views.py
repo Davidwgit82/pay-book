@@ -78,7 +78,7 @@ def checkout_info(request, instance_id):
 
     return render(request, 'checkout_info.html', {'book_instance': book_instance})
 
-@require_POST
+@require_http_methods(["GET", "POST"])
 def initiate_payment(request, instance_id):
     book_instance = get_object_or_404(BookInstance, id=instance_id)
 
