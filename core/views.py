@@ -146,11 +146,11 @@ def initiate_payment(request, instance_id):
     }
 
     # --- DEBUG TEMPORAIRE : à retirer une fois le bug identifié ---
-    print("=== DEBUG PAYMENT ===")
-    print("amount:", payment.amount, type(payment.amount))
-    print("success_url:", success_url)
-    print("error_url:", error_url)
-    print("payload:", payload)
+    # print("=== DEBUG PAYMENT ===")
+    # print("amount:", payment.amount, type(payment.amount))
+    # print("success_url:", success_url)
+    # print("error_url:", error_url)
+    # print("payload:", payload)
     # ----------------------------------------------------------------
 
     try:
@@ -187,6 +187,7 @@ def initiate_payment(request, instance_id):
 
     # En cas d'échec, on redirige vers le détail du livre
     return redirect('book-detail', pk=book_instance.book.id)
+
 
 @csrf_exempt
 @require_POST
