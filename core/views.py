@@ -154,10 +154,10 @@ def initiate_payment(request, instance_id):
     try:
         response = requests.post(settings.GENIUS_PAY_API_URL, json=payload, headers=headers, timeout=10)
 
-        # --- DEBUG TEMPORAIRE ---
-        print("STATUS CODE:", response.status_code)
-        print("RESPONSE BODY:", response.text)
-        # ------------------------
+        print("URL DEMANDÉE:", settings.GENIUS_PAY_API_URL)
+        print("URL FINALE APRÈS REDIRECTIONS:", response.url)
+        print("REDIRECTIONS SUIVIES:", [r.url for r in response.history])
+        print("STATUS:", response.status_code)
 
         data = response.json()
 
@@ -176,7 +176,7 @@ def initiate_payment(request, instance_id):
         else:
             # Si l'API refuse la requête, on récupère le message d'erreur si possible
             error_message = data.get("message", "Erreur lors de l'initialisation du paiement.")
-            print("ERREUR GENIUSPAY (data complet):", data)  # --- DEBUG TEMPORAIRE ---
+            # print("ERREUR GENIUSPAY (data complet):", data)  # --- DEBUG TEMPORAIRE ---
             messages.error(request, error_message)
 
     except requests.RequestException as e:
