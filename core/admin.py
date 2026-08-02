@@ -1,8 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
-from .models import User
-
+from .models import User, Category, Book, BookInstance
 
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
@@ -77,3 +76,29 @@ class UserAdmin(BaseUserAdmin):
             ),
         }),
     )
+
+@admin.register(Category)
+class CategoryAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+    search_fields = ('name',)
+
+
+class BookInstanceInline(admin.TabularInline):
+    model = BookInstance
+    extra = 1  # Nombre de lignes vides affichées par défaut pour ajouter une instance
+
+
+@admin.register(Book)
+class BookAdmin(admin.ModelAdmin):
+    list_display = ('title', 'category', 'author', 'prix')
+    list_filter = ('category', 'author')
+    search_fields = ('title', 'description')
+    inlines = [BookInstanceInline]
+
+
+@admin.register(BookInstance)
+class BookInstanceAdmin(admin.ModelAdmin):
+    list_display = ('book', 'status', 'due_back')
+    list_filter = ('status', 'due_back')
+    search_fields = ('book__title',)
+

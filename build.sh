@@ -10,3 +10,6 @@ python manage.py collectstatic --no-input
 
 # Appliquer les migrations de la base de données
 python manage.py migrate
+
+# Créer un admin user
+python manage.py create_admin
