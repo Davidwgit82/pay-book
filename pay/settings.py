@@ -135,3 +135,5 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 GENIUS_PAY_API_KEY = env('GENIUS_PAY_API_KEY', default='')
 GENIUS_PAY_API_URL = env('GENIUS_PAY_API_URL', default='')
 GENIUS_PAY_API_SECRET = env('GENIUS_PAY_API_SECRET', default='')
+
+print(f"[BOOT] GENIUS_PAY_API_KEY chargée: {GENIUS_PAY_API_KEY[:12]}... (longueur: {len(GENIUS_PAY_API_KEY)})")
