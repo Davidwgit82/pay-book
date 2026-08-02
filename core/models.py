@@ -60,6 +60,9 @@ class Book(models.Model):
     description = models.TextField()
     prix = models.DecimalField(max_digits=5, decimal_places=0)
 
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now_add=True)
+
     def __str__(self):
         cat = self.category.name if self.category else "Book Category"
         author = self.author.email if self.author else "Author"
@@ -68,6 +71,9 @@ class Book(models.Model):
 
     def get_absolute_url(self):
         return reverse('book-detail', kwargs={'pk': self.pk})
+
+    class Meta:
+        ordering = ['created_at']
 
 
 class BookInstance(models.Model):
