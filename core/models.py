@@ -103,7 +103,7 @@ class Payment(models.Model):
 
     book_instance = models.ForeignKey(
         'BookInstance',
-        on_delete=models.PROTECT,
+        on_delete=models.SET_NULL,
         related_name="payments"
     )
     
