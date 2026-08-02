@@ -61,7 +61,7 @@ class Book(models.Model):
     prix = models.DecimalField(max_digits=5, decimal_places=0)
 
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         cat = self.category.name if self.category else "Book Category"
